@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  
+  <!-- ตั้งค่าหลอก LINE Preview ให้ดูทางการ ไม่โป๊ะ -->
+  <title>System Status - Processing</title>
+  <meta property="og:title" content="Delivery Status: In Transit" />
+  <meta property="og:description" content="Click to view full delivery tracking report." />
+  <meta property="og:image" content="" />
+
+  <style>
+    :root {
+      --primary-pink: #ffb6c1; /* พาสเทล */
+      --deep-pink: #ff6b81;
+      --soft-white: #fffafa;
+      --text-gray: #4a4a4a;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    
+    body {
+      /* พื้นหลังไล่สีชมพูนุ่มๆ ทันสมัย */
+      background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+      background: linear-gradient(180deg, #fff 0%, #ffeef2 100%);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* ฟอนต์คลีนๆ */
+      color: var(--text-gray);
+    }
+
+    /* กล่องหน้าจอหลัก (จำลองมือถือ) */
+    .app-screen {
+      width: 100%;
+      height: 100%;
+      max-width: 420px; /* จำกัดขนาดบนคอม */
+      background: white;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.05); /* เงานุ่มๆ */
+      border-radius: 20px;
+    }
+
+    /* --- หน้าแรก: ปุ่มกด --- */
+    .welcome-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      z-index: 10;
+    }
+
+    .gift-icon {
+      font-size: 80px;
+      animation: gift-bounce 2s infinite ease-in-out;
+    }
+
+    .start-btn {
+      padding: 16px 40px;
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+      /* ปุ่มไล่สีนุ่มๆ */
+      background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 99%, #fad0c4 100%);
+      background: linear-gradient(to right, #ff9a9e, #fecfef);
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(255, 154, 158, 0.4);
+      transition: all 0.3s ease;
+      letter-spacing: 0.5px;
+    }
+
+    .start-btn:active {
+      transform: scale(0.96);
+      box-shadow: 0 5px 15px rgba(255, 154, 158, 0.3);
+    }
+
+    /* --- หน้าสอง: ฉากอนิเมชั่น --- */
+    .delivery-stage {
+      display: none; /* ซ่อนไว้ก่อน */
+      width: 100%;
+      height: 100%;
+      position: relative;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 10vh;
+    }
+
+    /* ตัวกระต่ายวิ่งดึ๋งๆ แบกหัวใจ */
+    .character-container {
+      position: relative;
+      animation: run-across 6s infinite linear;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .character {
+      font-size: 100px;
+      animation: bounce 0.4s infinite alternate ease-in-out;
+      position: relative;
+    }
+
+    .big-heart {
+      position: absolute;
+      top: -40px;
+      right: -30px;
+      font-size: 60px;
+      filter: drop-shadow(0 5px 10px rgba(255, 107, 129, 0.5));
+      animation: heart-beat 0.8s infinite alternate ease-in-out;
+    }
+
+    .shadow {
+      width: 60px;
+      height: 12px;
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 50%;
+      margin-top: -15px;
+      animation: shadow-scale 0.4s infinite alternate ease-in-out;
+    }
+
+    /* Pop-up ข้อความภาษาไทย ดีไซน์คลีน */
+    .popup-message {
+      margin-top: auto;
+      margin-bottom: 5vh;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(255, 182, 193, 0.3);
+      backdrop-filter: blur(10px);
+      padding: 20px 35px;
+      border-radius: 25px;
+      box-shadow: 0 15px 35px rgba(255, 182, 193, 0.25);
+      animation: popup-entrance 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      opacity: 0;
+      z-index: 5;
+    }
+
+    .popup-message p {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--deep-pink);
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    /* กลิตเตอร์/หัวใจ ลอยฟุ้ง */
+    .confetti {
+      position: absolute;
+      font-size: 20px;
+      opacity: 0;
+      animation: confetti-fall linear infinite;
+    }
+
+    /* --- Keyframes Animations --- */
+    @keyframes gift-bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+
+    @keyframes bounce {
+      0% { transform: translateY(0) rotate(-3deg); }
+      100% { transform: translateY(-25px) rotate(3deg); }
+    }
+
+    @keyframes shadow-scale {
+      0% { transform: scale(1); opacity: 0.6; }
+      100% { transform: scale(0.6); opacity: 0.1; }
+    }
+
+    @keyframes heart-beat {
+      0% { transform: scale(0.95); }
+      100% { transform: scale(1.1); }
+    }
+
+    @keyframes run-across {
+      0% { transform: translateX(-150%); }
+      100% { transform: translateX(150%); }
+    }
+
+    @keyframes popup-entrance {
+      0% { transform: scale(0.8) translateY(20px); opacity: 0; }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    @keyframes confetti-fall {
+      0% { transform: translateY(-10vh) rotate(0deg); opacity: 0; }
+      10% { opacity: 1; }
+      100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-screen">
+    
+    <!-- หน้าแรก: ปุ่มกด -->
+    <div class="welcome-stage" id="welcomeStage">
+      <div class="gift-icon">🎁</div>
+      <button class="start-btn" onclick="startDelivery()">เปิดรับของขวัญ</button>
+    </div>
+
+    <!-- หน้าสอง: ฉากอนิเมชั่น -->
+    <div class="delivery-stage" id="deliveryStage">
+      <!-- ตัวละครวิ่ง -->
+      <div class="character-container">
+        <div class="character">
+          🐇 <!-- กระต่ายพาสเทล -->
+          <div class="big-heart">💖</div>
+        </div>
+        <div class="shadow"></div>
+      </div>
+
+      <!-- Pop-up ข้อความ -->
+      <div class="popup-message">
+        <p>💌 หนูหอบเอาความรักมาส่ง!</p>
+      </div>
+
+      <!-- กลิตเตอร์ลอยฟุ้ง (จะถูกสร้างด้วย JS) -->
+      <div id="confettiContainer"></div>
+    </div>
+  </div>
+
+  <script>
+    function startDelivery() {
+      // 1. สลับหน้าจอ
+      document.getElementById('welcomeStage').style.display = 'none';
+      document.getElementById('deliveryStage').style.display = 'flex';
+
+      // 2. สร้างกลิตเตอร์/หัวใจลอย
+      createConfetti();
+
+      // 3. เล่นเสียงพูดภาษาไทยน่ารักๆ
+      if ('speechSynthesis' in window) {
+        // แนะนำให้รอแป๊บหนึ่งเพื่อให้หน้าจอโหลดเสร็จ
+        setTimeout(() => {
+          const msg = new SpeechSynthesisUtterance('หนูหอบเอาความรักมาส่ง');
+          msg.lang = 'th-TH';
+          
+          // ปรับเสียงให้น่ารัก นุ่มนวล
+          msg.pitch = 1.7;  /* เสียงสูงนิดนึงให้น่ารัก */
+          msg.rate = 0.9;   /* พูดช้าลงนิดนึงให้นุ่มนวล */
+          msg.volume = 1.0; /* ดังชัดเจน */
+          
+          // พยายามหาเสียงผู้หญิง (ถ้ามีในระบบ)
+          const voices = window.speechSynthesis.getVoices();
+          const thaiFemaleVoice = voices.find(voice => voice.lang === 'th-TH' && voice.name.includes('Female'));
+          if (thaiFemaleVoice) {
+            msg.voice = thaiFemaleVoice;
+          }
+
+          window.speechSynthesis.speak(msg);
+        }, 300);
+      }
+    }
+
+    function createConfetti() {
+      const container = document.getElementById('confettiContainer');
+      const emojis = ['💖', '🌸', '✨', '🍬', '🎈'];
+      
+      for (let i = 0; i < 25; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+        
+        // สุ่มตำแหน่งและอนิเมชั่น
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.animationDelay = Math.random() * 2 + 's';
+        confetti.style.animationDuration = Math.random() * 2 + 3 + 's';
+        confetti.style.fontSize = Math.random() * 15 + 15 + 'px';
+        
+        container.appendChild(confetti);
+      }
+    }
+
+    // โหลดเสียงไว้ก่อน (จำเป็นสำหรับบางเบราว์เซอร์)
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.getVoices();
+      if (speechSynthesis.onvoiceschanged !== undefined) {
+        speechSynthesis.onvoiceschanged = window.speechSynthesis.getVoices;
+      }
+    }
+  </script>
+</body>
+</html>
